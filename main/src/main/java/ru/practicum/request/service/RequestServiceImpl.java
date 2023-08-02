@@ -61,7 +61,7 @@ public class RequestServiceImpl implements RequestService {
         if (!event.getState().equals(EventState.PUBLISHED)) {
             throw new ForbiddenParameterException("Нельзя создать запрос на неопубликованое событие");
         }
-        if (event.getConfirmedRequests() != null
+        if (event.getConfirmedRequests() != null && event.getParticipantLimit() != 0
                 && Long.valueOf(event.getParticipantLimit()) <= event.getConfirmedRequests()) {
             throw new ForbiddenParameterException("Достигнут лимит запросов на участие в событии");
         }

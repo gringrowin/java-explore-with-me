@@ -29,7 +29,9 @@ public interface EventMapper {
                   LocalDateTime createdOn,
                   EventState state);
 
+    @Mapping(target = "views", source = "views")
     EventFullDto toEventFullDto(Event event, Long views);
 
+    @Mapping(target = "views", source = "views")
     EventShortDto toEventShortDto(Event event, Long views);
 }

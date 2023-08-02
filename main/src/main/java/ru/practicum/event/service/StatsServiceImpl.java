@@ -13,7 +13,6 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -37,8 +36,8 @@ public class StatsServiceImpl implements StatsService {
 
     @Override
     public List<ViewStatsDto> getStats(LocalDateTime start, LocalDateTime end, List<String> uris, Boolean unique) {
-        log.info("Отправлен запрос на получение статистики к серверу статистики с параметрами " +
-                "start = {}, end = {}, uris = {}, unique = {}", start, end, uris, unique);
+        log.info("StatsServiceImpl.addHit: " +
+                "start = {}, end = {}, uris = {}, unique = {} - Started ", start, end, uris, unique);
 
         ResponseEntity<Object> response = statsClient.getStats(start, end, uris, unique);
 
@@ -50,39 +49,25 @@ public class StatsServiceImpl implements StatsService {
     }
 
     @Override
-    public Map<Long, Long> getViews(List<Event> events) {
-        log.info("StatsServiceImpl.getViews: {} - events.size - Started", events.size());
+    public Long getViewsByEvent(Event event) {
+        log.info("StatsServiceImpl.getViews: {} - events.views - Started", event.getViews());
 
-        Map<Long, Long> views = new HashMap<>();
+       Long views = 0L;
 
-        if (events.isEmpty()) {
+        if (event.getViews() == null && event.getPublishedOn() != null) {
             return views;
         }
 
-        List<Event> publishedEvents = events
-                .stream()
-                .filter(event -> event.getPublishedOn() != null)
-                .collect(Collectors.toList());
-
-        if (events.isEmpty()) {
-            return views;
-        }
-
-        LocalDateTime start = LocalDateTime.MIN;
+        LocalDateTime start = LocalDateTime.now().minusYears(100L);
         LocalDateTime end = LocalDateTime.now();
-        List<String> uris = publishedEvents.stream()
-                .map(Event::getId)
-                .map(id -> ("/events/" + id))
-                .collect(Collectors.toList());
+        String uris = "/events/" + event.getId();
 
-        List<ViewStatsDto> stats = getStats(start, end, uris, null);
-        stats.forEach(stat -> {
-            Long eventId = Long.parseLong(stat.getUri()
-                    .split("/", 0)[2]);
-            views.put(eventId, views.getOrDefault(eventId, 0L) + stat.getHits());
-        });
+        List<ViewStatsDto> stats = getStats(start, end, List.of(uris), true);
+        if (!stats.isEmpty()) {
+            views = views + stats.get(0).getHits();
+        }
 
-        log.info("StatsServiceImpl.getViews: {} - events.size - Finished", views);
+        log.info("StatsServiceImpl.getViews: {} - views - Finished", views);
         return views;
     }
 }

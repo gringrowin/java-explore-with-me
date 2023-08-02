@@ -31,12 +31,12 @@ public class CompilationServiceImpl implements CompilationService {
 
     @Override
     @Transactional
-    public CompilationDto createCompilation (NewCompilationDto newCompilationDto) {
+    public CompilationDto createCompilation(NewCompilationDto newCompilationDto) {
         log.info("CompilationServiceImpl.createCompilation: {} - Started", newCompilationDto);
 
         List<Event> events = new ArrayList<>();
 
-        if (!newCompilationDto.getEvents().isEmpty()) {
+        if (newCompilationDto.getEvents() != null) {
             events = eventService.getEventsByIds(newCompilationDto.getEvents());
             if (events.size() != newCompilationDto.getEvents().size()) {
                 throw new NotFoundException("Часть событий не найдены.");
@@ -56,7 +56,7 @@ public class CompilationServiceImpl implements CompilationService {
         log.info("CompilationServiceImpl.updateCompilation: {}, {} - Started", compId, updateCompilationRequest);
 
         Compilation compilation = findCompilationById(compId);
-        List<Event> events = new ArrayList<>();
+        List<Event> events;
 
         if (updateCompilationRequest.getTitle() != null) {
             compilation.setTitle(updateCompilationRequest.getTitle());

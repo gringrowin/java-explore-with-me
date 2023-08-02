@@ -5,7 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import ru.practicum.event.enums.EventState;
 import ru.practicum.event.enums.EventStateAdminAction;
 
 import javax.validation.Valid;

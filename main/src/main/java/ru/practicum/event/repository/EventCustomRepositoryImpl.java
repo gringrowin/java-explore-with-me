@@ -26,8 +26,7 @@ public class EventCustomRepositoryImpl implements EventCustomRepository {
             LocalDateTime rangeStart,
             LocalDateTime rangeEnd,
             Integer from,
-            Integer size)
-    {
+            Integer size) {
         CriteriaBuilder builder = entityManager.getCriteriaBuilder();
         CriteriaQuery<Event> query = builder.createQuery(Event.class);
         Root<Event> root = query.from(Event.class);
@@ -63,8 +62,7 @@ public class EventCustomRepositoryImpl implements EventCustomRepository {
             Boolean onlyAvailable,
             EventSortBy sort,
             Integer from,
-            Integer size)
-    {
+            Integer size) {
         CriteriaBuilder builder = entityManager.getCriteriaBuilder();
         CriteriaQuery<Event> query = builder.createQuery(Event.class);
         Root<Event> root = query.from(Event.class);

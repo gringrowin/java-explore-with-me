@@ -3,12 +3,10 @@ package ru.practicum.event.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.category.model.Category;
 import ru.practicum.category.service.CategoryService;
-import ru.practicum.client.StatsClient;
 import ru.practicum.event.dto.*;
 import ru.practicum.event.enums.EventSortBy;
 import ru.practicum.event.enums.EventState;
@@ -19,6 +17,7 @@ import ru.practicum.event.model.Location;
 import ru.practicum.event.repository.EventRepository;
 import ru.practicum.event.repository.LocationRepository;
 import ru.practicum.exception.ForbiddenParameterException;
+import ru.practicum.exception.IvalidDataTimeException;
 import ru.practicum.exception.NotFoundException;
 import ru.practicum.user.model.User;
 import ru.practicum.user.service.UserService;
@@ -53,10 +52,10 @@ public class EventServiceImpl implements EventService {
 
         if (newEventDto.getEventDate() != null
                 && newEventDto.getEventDate().isBefore(LocalDateTime.now().plusHours(2))) {
-            throw new ForbiddenParameterException(
+            throw new IvalidDataTimeException(
                     String.format("Field: eventDate. Error: должно содержать время, " +
-                            "не ранее чем через 2 часа от текущего." +
-                            "  Value: %s", newEventDto.getEventDate()));
+                            "не ранее чем через 2 часа от текущего. " +
+                            "Value: %s", newEventDto.getEventDate()));
         }
 
         User eventOwner = userService.findUserById(userId);
@@ -73,7 +72,9 @@ public class EventServiceImpl implements EventService {
         event.setConfirmedRequests(0L);
         event.setViews(0L);
 
-        EventFullDto eventFullDto = eventMapper.toEventFullDto(eventRepository.save(event));
+        event = eventRepository.save(event);
+
+        EventFullDto eventFullDto = eventMapper.toEventFullDto(event, statsService.getViewsByEvent(event));
         log.info("EventServiceImpl.createEventByPrivateAccess: {} - Finished", eventFullDto);
         return eventFullDto;
     }
@@ -85,7 +86,7 @@ public class EventServiceImpl implements EventService {
         log.info("EventServiceImpl.updateEventByAdminAccess: {}, {} - Started", eventId, updateEventAdminRequest);
         if (updateEventAdminRequest.getEventDate() != null
                 && updateEventAdminRequest.getEventDate().isBefore(LocalDateTime.now().plusHours(1))) {
-            throw new ForbiddenParameterException(
+            throw new IvalidDataTimeException(
                     String.format("Field: eventDate. Error: должно содержать время, " +
                             "не ранее чем через 1 час от текущего." +
                             "  Value: %s", updateEventAdminRequest.getEventDate()));
@@ -146,8 +147,9 @@ public class EventServiceImpl implements EventService {
         if (updateEventAdminRequest.getTitle() != null) {
             event.setTitle(updateEventAdminRequest.getTitle());
         }
+        event = eventRepository.save(event);
 
-        EventFullDto eventFullDto = eventMapper.toEventFullDto(eventRepository.save(event));
+        EventFullDto eventFullDto = eventMapper.toEventFullDto(event, statsService.getViewsByEvent(event));
         log.info("EventServiceImpl.updateEventByAdminAccess: {} - Finished", eventFullDto);
         return eventFullDto;
     }
@@ -173,7 +175,7 @@ public class EventServiceImpl implements EventService {
                 "  - Started", users, states, categories, rangeStart, rangeEnd, from, size);
 
         if (rangeStart != null && rangeEnd != null && rangeStart.isAfter(rangeEnd)) {
-            throw new ForbiddenParameterException(
+            throw new IvalidDataTimeException(
                     String.format("Некорректные параметры временного " +
                     "интервала. Value: rangeStart = %s, rangeEnd = %s", rangeStart, rangeEnd));
         }
@@ -182,7 +184,7 @@ public class EventServiceImpl implements EventService {
                 users, states, categories, rangeStart, rangeEnd, from, size);
 
         List<EventFullDto> eventDtos = new ArrayList<>();
-        events.forEach(event -> eventDtos.add(eventMapper.toEventFullDto(event)));
+        events.forEach(event -> eventDtos.add(eventMapper.toEventFullDto(event, statsService.getViewsByEvent(event))));
         log.info("EventServiceImpl.getEventsByAdminAccess: {},  - Finished", eventDtos.size());
         return eventDtos;
     }
@@ -211,8 +213,9 @@ public class EventServiceImpl implements EventService {
                 "{} size" +
                 "  - Started", text, categories, paid, onlyAvailable, sort, rangeStart, rangeEnd, from, size);
 
-        if (rangeStart != null && rangeEnd != null && rangeStart.isAfter(rangeEnd)) {
-            throw new ForbiddenParameterException(
+        if (rangeStart
+                != null && rangeEnd != null && rangeStart.isAfter(rangeEnd)) {
+            throw new IvalidDataTimeException(
                     String.format("Некорректные параметры временного " +
                             "интервала. Value: rangeStart = %s, rangeEnd = %s", rangeStart, rangeEnd));
         }
@@ -224,9 +227,11 @@ public class EventServiceImpl implements EventService {
             return Collections.emptyList();
         }
         List<EventShortDto> eventDtos = new ArrayList<>();
-        events.forEach(event -> eventDtos.add(eventMapper.toEventShortDto(event, statsService.getViews(event.getId()))));
-
         statsService.addHit(request);
+        events.forEach(
+                event -> eventDtos.add(eventMapper.toEventShortDto(event, statsService.getViewsByEvent(event))));
+
+
         log.info("EventServiceImpl.getEventsByPublicAccess: {} - Finished", eventDtos.size());
         return eventDtos;
     }
@@ -239,8 +244,8 @@ public class EventServiceImpl implements EventService {
         if (!event.getState().equals(EventState.PUBLISHED)) {
             throw new NotFoundException(String.format("Событие с ID: %s не опубликовано", eventId));
         }
-        EventFullDto eventFullDto = eventMapper.toEventFullDto(event);
-//        statsService.addHit(request);
+        statsService.addHit(request);
+        EventFullDto eventFullDto = eventMapper.toEventFullDto(event, statsService.getViewsByEvent(event));
         log.info("EventServiceImpl.getEventByPublicAccess: {} - Finished", eventFullDto);
         return eventFullDto;
     }
@@ -253,7 +258,7 @@ public class EventServiceImpl implements EventService {
         if (!event.getInitiator().equals(user)) {
             throw new NotFoundException("Пользователь не является инициатором события");
         }
-        EventFullDto eventFullDto = eventMapper.toEventFullDto(event);
+        EventFullDto eventFullDto = eventMapper.toEventFullDto(event, statsService.getViewsByEvent(event));
         log.info("EventServiceImpl.getEventByPrivateAccess: {} - Finished", eventFullDto);
         return eventFullDto;
     }
@@ -268,7 +273,7 @@ public class EventServiceImpl implements EventService {
 
         if (updateEventUserRequest.getEventDate() != null
                 && updateEventUserRequest.getEventDate().isBefore(LocalDateTime.now().plusHours(2))) {
-            throw new ForbiddenParameterException(
+            throw new IvalidDataTimeException(
                     String.format("Field: eventDate. Error: должно содержать время, " +
                             "не ранее чем через 2 часа от текущего." +
                             "  Value: %s", updateEventUserRequest.getEventDate()));
@@ -323,7 +328,7 @@ public class EventServiceImpl implements EventService {
         if (updateEventUserRequest.getTitle() != null) {
             event.setTitle(updateEventUserRequest.getTitle());
         }
-        EventFullDto eventFullDto = eventMapper.toEventFullDto(event);
+        EventFullDto eventFullDto = eventMapper.toEventFullDto(event, statsService.getViewsByEvent(event));
         log.info("EventServiceImpl.updateEventByPrivateAccess: {} - Finished", eventFullDto);
         return eventFullDto;
     }
@@ -334,7 +339,7 @@ public class EventServiceImpl implements EventService {
         userService.findUserById(userId);
         List<Event> events = eventRepository.findAllByInitiatorId(userId, PageRequest.of(from / size, size));
         List<EventShortDto> eventDtos = new ArrayList<>();
-        events.forEach(event -> eventDtos.add(eventMapper.toEventShortDto(event)));
+        events.forEach(event -> eventDtos.add(eventMapper.toEventShortDto(event, statsService.getViewsByEvent(event))));
         log.info("EventServiceImpl.getAllEventsByPrivateAccess: {} - Finished", eventDtos.size());
         return eventDtos;
     }

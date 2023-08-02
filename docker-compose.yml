@@ -43,5 +43,5 @@ services:
       - "6542:5432"
     environment:
       - POSTGRES_DB=ewm-db
-      - POSTGRES_USER=root
-      - POSTGRES_PASSWORD=root
+      - POSTGRES_USER=sa
+      - POSTGRES_PASSWORD=password

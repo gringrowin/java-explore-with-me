@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import ru.practicum.exception.ForbiddenParameterException;
+import ru.practicum.exception.IvalidDataTimeException;
 import ru.practicum.exception.NotFoundException;
 
 import javax.validation.ConstraintViolationException;
@@ -36,7 +37,7 @@ public class ErrorHandler {
     }
 
     @ExceptionHandler
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ResponseStatus(HttpStatus.CONFLICT)
     public ErrorResponse handleForbiddenParameterException(final ForbiddenParameterException e) {
         log.error("ErrorResponse.handleForbiddenParameterException: {} ", e.toString());
         return ErrorResponse.builder()
@@ -60,6 +61,7 @@ public class ErrorHandler {
     }
 
     @ExceptionHandler({
+                    IvalidDataTimeException.class,
                     MethodArgumentTypeMismatchException.class,
                     ConstraintViolationException.class,
                     MethodArgumentNotValidException.class,

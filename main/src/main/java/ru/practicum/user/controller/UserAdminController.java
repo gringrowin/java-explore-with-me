@@ -26,7 +26,7 @@ public class UserAdminController {
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    public List<UserDto> getAllUsers(@RequestParam(name = "ids") Set<Long> ids,
+    public List<UserDto> getAllUsers(@RequestParam(name = "ids", required = false) Set<Long> ids,
                                      @PositiveOrZero @RequestParam(defaultValue = "0") Integer from,
                                      @Positive @RequestParam(defaultValue = "10") Integer size) {
         log.info("UserAdminController.getAllUsers: {}, {}, {} - Started", ids, from, size);

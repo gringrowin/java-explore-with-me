@@ -1,6 +1,5 @@
 package ru.practicum.event.service;
 
-import org.springframework.data.domain.PageRequest;
 import ru.practicum.event.dto.*;
 import ru.practicum.event.enums.EventSortBy;
 import ru.practicum.event.enums.EventState;
@@ -11,7 +10,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public interface EventService {
-    
     EventFullDto updateEventByAdminAccess(Long eventId, UpdateEventAdminRequest updateEventAdminRequest);
 
     List<EventFullDto> getEventsByAdminAccess(List<Long> users, List<EventState> states, List<Long> categories, LocalDateTime rangeStart, LocalDateTime rangeEnd, Integer from, Integer size);
