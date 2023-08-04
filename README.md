@@ -10,6 +10,8 @@ Template repository for ExploreWithMe project.
 - сервис статистики
 - база данных сервиса статистики
 
+[Ссылка на финальный PR](https://github.com/gringrowin/java-explore-with-me/pull/5)
+
 ## Endpoints
 - [Техническое задание для API основного сервиса](./ewm-main-service-spec.json)
 - [Техническое задание для API сервиса статистики](./ewm-stats-service-spec.json)
