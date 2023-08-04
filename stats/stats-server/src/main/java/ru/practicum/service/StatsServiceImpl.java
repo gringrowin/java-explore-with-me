@@ -21,13 +21,15 @@ public class StatsServiceImpl implements StatsService {
 
     private StatsRepository statsRepository;
 
+    private final StatsMapper statsMapper;
+
     @Override
     @Transactional
     public EndpointHitDto create(EndpointHitDto endpointHitDto) {
         log.info("StatsServiceImpl.save: {} - Started", endpointHitDto);
-        Stats stats = statsRepository.save(StatsMapper.toStats(endpointHitDto));
+        Stats stats = statsRepository.save(statsMapper.toStats(endpointHitDto));
         log.info("StatsServiceImpl.save: {} - Finished", stats);
-        return StatsMapper.toEndpointHitDto(stats);
+        return statsMapper.toEndpointHitDto(stats);
     }
 
     @Override
@@ -37,6 +39,10 @@ public class StatsServiceImpl implements StatsService {
                                        Set<String> uris,
                                        Boolean unique) {
         log.info("StatsServiceImpl.getStats: {}, {}, {}, {} - Started", start, end, uris, unique);
+
+        if (start.isAfter(end)) {
+            throw new IllegalArgumentException("Недопустимый временной промежуток.");
+        }
         List<ViewStatsDto> statDtoList;
         if (uris == null || uris.isEmpty()) {
             if (unique) {
