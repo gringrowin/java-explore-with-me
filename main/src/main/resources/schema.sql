@@ -77,3 +77,14 @@ CREATE TABLE IF NOT EXISTS events_compilations
     compilation_id BIGINT REFERENCES compilations (compilation_id) ON DELETE CASCADE
 );
 
+CREATE TABLE IF NOT EXISTS comments
+(
+    comment_id BIGINT NOT NULL GENERATED ALWAYS AS IDENTITY,
+    created_on TIMESTAMP WITHOUT TIME ZONE,
+    edited_on TIMESTAMP WITHOUT TIME ZONE,
+    text VARCHAR(7000) NOT NULL,
+    author_id BIGINT REFERENCES users (user_id) ON DELETE CASCADE,
+    event_id BIGINT REFERENCES events (event_id) ON DELETE CASCADE,
+    CONSTRAINT pk_comments PRIMARY KEY (comment_id)
+);
+
