@@ -75,7 +75,7 @@ public class CommentServiceImpl implements CommentService {
 
         Comment comment = findCommentById(commentId);
 
-        if (comment.getAuthor().equals(user)) {
+        if (!comment.getAuthor().equals(user)) {
             throw new ForbiddenParameterException("Редактировать возможно только собственные коментарии.");
         }
         comment.setText(newCommentDto.getText());
@@ -89,7 +89,7 @@ public class CommentServiceImpl implements CommentService {
         User user = userService.findUserById(userId);
         Comment comment = findCommentById(commentId);
 
-        if (comment.getAuthor().equals(user)) {
+        if (!comment.getAuthor().equals(user)) {
             throw new ForbiddenParameterException("Удалять возможно только собственные коментарии.");
         }
         commentRepository.deleteById(commentId);
