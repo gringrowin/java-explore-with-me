@@ -34,14 +34,17 @@ import java.util.List;
 public class EventServiceImpl implements EventService {
 
     private final EventRepository eventRepository;
+
     private final LocationRepository locationRepository;
 
     private final UserService userService;
+
     private final CategoryService categoryService;
 
     private final StatsService statsService;
 
     private final EventMapper eventMapper;
+
     private final LocationMapper locationMapper;
 
 
@@ -68,9 +71,9 @@ public class EventServiceImpl implements EventService {
                 eventCategory,
                 eventLocation,
                 LocalDateTime.now(),
-                EventState.PENDING);
-        event.setConfirmedRequests(0L);
-        event.setViews(0L);
+                EventState.PENDING,
+                0L,
+                0L);
 
         event = eventRepository.save(event);
 

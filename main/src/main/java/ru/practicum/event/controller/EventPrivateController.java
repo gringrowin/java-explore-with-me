@@ -82,8 +82,7 @@ public class EventPrivateController {
     public List<ParticipationRequestDto> getEventRequestsByEventInitiator(
             @PathVariable Long userId,
             @PathVariable Long eventId) {
-        log.info("EventPrivateController.getEventRequestsByEventInitiator: " +
-                "{}, {}  - Started", userId, eventId);
+        log.info("EventPrivateController.getEventRequestsByEventInitiator: {}, {}  - Started", userId, eventId);
 
         List<ParticipationRequestDto> requestDtoList =
                 requestService.getEventRequestsByEventInitiator(userId, eventId);

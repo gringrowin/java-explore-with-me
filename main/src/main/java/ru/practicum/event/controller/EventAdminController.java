@@ -40,11 +40,11 @@ public class EventAdminController {
                 "{} - users, " +
                 "{} - states, " +
                 "{} - categories, " +
-                "{} - rangeStart," +
-                " {} - rangeEnd," +
-                "{} - from," +
-                "{} size" +
-                "  - Started", users, states, categories, rangeStart, rangeEnd, from, size);
+                "{} - rangeStart, " +
+                "{} - rangeEnd, " +
+                "{} - from, " +
+                "{} size " +
+                "- Started", users, states, categories, rangeStart, rangeEnd, from, size);
         List<EventFullDto> eventFullDtoList =
                 eventService.getEventsByAdminAccess(users, states, categories, rangeStart, rangeEnd, from, size);
         log.info("EventAdminController.getEventsByAdminAccess: {},  - Finished", eventFullDtoList.size());

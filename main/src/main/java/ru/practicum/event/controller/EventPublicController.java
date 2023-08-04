@@ -43,13 +43,13 @@ public class EventPublicController {
                 "{} - text, " +
                 "{} - categories, " +
                 "{} - paid, " +
-                "{} - rangeStart," +
-                " {} - rangeEnd," +
-                " {} - onlyAvailable," +
-                " {} - sort," +
+                "{} - rangeStart, " +
+                "{} - rangeEnd, " +
+                "{} - onlyAvailable, " +
+                "{} - sort," +
                 "{} - from," +
-                "{} size" +
-                "  - Started", text, categories, paid, rangeStart, rangeEnd, onlyAvailable, sort, from, size);
+                "{} size " +
+                "- Started", text, categories, paid, rangeStart, rangeEnd, onlyAvailable, sort, from, size);
         List<EventShortDto> eventShortDtoList = eventService.getEventsByPublicAccess(
                 text, categories, paid, rangeStart, rangeEnd, onlyAvailable,
                 sort, from, size, request);

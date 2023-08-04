@@ -24,6 +24,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -42,9 +43,12 @@ public class RequestServiceImpl implements RequestService {
         log.info("RequestServiceImpl.getRequests: {} - Started", userId);
         userService.findUserById(userId);
         List<Request> requests = requestRepository.findAllByRequesterId(userId);
-        List<ParticipationRequestDto> requestDtoList = new ArrayList<>();
-        requests.forEach(request -> requestDtoList.add(requestMapper.toParticipationRequestDto(request)));
-        log.info("RequestServiceImpl.getRequests: {} - Finished", requestDtoList.size());
+        List<ParticipationRequestDto> requestDtoList = requests
+                .stream()
+                .map(requestMapper::toParticipationRequestDto)
+                .collect(Collectors.toList());
+
+        log.info("RequestServiceImpl.getRequests: {} - Finished", requestDtoList);
         return requestDtoList;
     }
 
