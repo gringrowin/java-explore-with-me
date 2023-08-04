@@ -372,7 +372,7 @@ public class EventServiceImpl implements EventService {
 
     private Location saveLocation(LocationDto locationDto) {
         Location location = locationMapper.toLocation(locationDto);
-        return locationRepository.findByLatAndLon(location.getLatitude(), location.getLongitude())
+        return locationRepository.findByLatitudeAndLongitude(location.getLatitude(), location.getLongitude())
                 .orElseGet(() -> locationRepository.save(location));
     }
 

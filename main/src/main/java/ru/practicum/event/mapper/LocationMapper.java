@@ -11,4 +11,8 @@ public interface LocationMapper {
     @Mapping(target = "latitude", source = "lat")
     @Mapping(target = "longitude", source = "lon")
     Location toLocation(LocationDto locationDto);
+
+    @Mapping(target = "lat", source = "latitude")
+    @Mapping(target = "lon", source = "longitude")
+    LocationDto toLocationDto(Location location);
 }
